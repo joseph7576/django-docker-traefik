@@ -1,3 +1,4 @@
 tags
 .venv
 db.sqlite3
+traefik-public-certificates

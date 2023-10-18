@@ -7,15 +7,23 @@ services:
     restart: always
     volumes:
       - "nexus-data:/sonatype-work"
-    expose:
-      - 8081
     depends_on:
+      - traefik
+    networks:
       - traefik
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.django.rule=Host(`nexus.visaroads.com`)"
-      - "traefik.http.routers.django.tls=true"
-      - "traefik.http.routers.django.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.nexus.rule=Host(`nexus.visaroads.com`)"
+      - "traefik.http.routers.nexus.tls=true"
+      - "traefik.http.routers.nexus.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.nexus.service=nexus"
+      - "traefik.http.services.nexus.loadbalancer.server.port=8081"
+
+      - "traefik.http.routers.nexus-docker.rule=Host(`docker.visaroads.com`)"
+      - "traefik.http.routers.nexus-docker.tls=true"
+      - "traefik.http.routers.nexus-docker.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.nexus-docker.service=nexus-docker"
+      - "traefik.http.services.nexus-docker.loadbalancer.server.port=5000"
 
   traefik:
     container_name: traefik
@@ -28,6 +36,8 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./traefik-public-certificates:/certificates"
+    networks:
+      - traefik
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dashboard.rule=Host(`traefik.visaroads.com`)"
@@ -40,3 +50,7 @@ services:
 volumes:
   traefik-public-certificates:
   nexus-data:
+
+networks:
+  traefik:
+    name: traefik
